@@ -1,0 +1,66 @@
+{
+  "id": "TEST_RE_001",
+  "name": "Test Reporting Event",
+  "version": "1.0.0",
+  "analyses": [
+    {
+      "id": "ANA_001",
+      "name": "Analysis 1",
+      "description": "First test analysis",
+      "order": 1,
+      "methodId": "METHOD_001",
+      "reason": {
+        "controlledTerm": "SPECIFIED_IN_SAP",
+        "description": "Analysis specified in statistical analysis plan"
+      }
+    },
+    {
+      "id": "ANA_002",
+      "name": "Analysis 2",
+      "description": "Second test analysis",
+      "order": 2,
+      "methodId": "METHOD_002",
+      "reason": {
+        "controlledTerm": "POST_HOC",
+        "description": "Post-hoc analysis"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "id": "METHOD_001",
+      "name": "Count and Percentage Method",
+      "description": "Method for counting and calculating percentages",
+      "operations": [
+        {
+          "id": "OP_001_1",
+          "name": "Count",
+          "description": "Count of subjects",
+          "order": 1,
+          "resultPattern": "N=XX"
+        },
+        {
+          "id": "OP_001_2",
+          "name": "Percentage",
+          "description": "Percentage of subjects",
+          "order": 2,
+          "resultPattern": "XX%"
+        }
+      ]
+    },
+    {
+      "id": "METHOD_002",
+      "name": "Mean Calculation Method",
+      "description": "Method for calculating mean values",
+      "operations": [
+        {
+          "id": "OP_002_1",
+          "name": "Mean",
+          "description": "Mean value",
+          "order": 1,
+          "resultPattern": "XX.X"
+        }
+      ]
+    }
+  ]
+}
