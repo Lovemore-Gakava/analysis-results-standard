@@ -645,6 +645,31 @@ else:
     if dss:
         rptevt.dataSubsets.append(dss)
 
+def read_operation_result(value: list, mapRslts: dict) -> OperationResult:
+    return OperationResult(
+        operationId=value[mapRslts["operation_id"]],
+        rawValue=value[mapRslts["rawValue"]],
+        formattedValue=value[mapRslts["formattedValue"]],
+        resultGroups=[
+            ResultGroup(
+                groupingId=value[x], groupId=value[y], groupValue=value[z]
+            )
+            for x, y, z in [
+                [
+                    mapRslts[rg + "_groupingId"],
+                    mapRslts[rg + "_groupId"],
+                    mapRslts[rg + "_groupValue"],
+                ]
+                for rg in sorted(set(
+                    k.split("_")[0]
+                    for k in mapRslts.keys()
+                    if k.startswith("resultGroup")
+                ))
+            ]
+            if value[x] is not None
+        ],
+    )
+
 results = {}
 
 if "AnalysisResults" in wb.sheetnames:
@@ -656,58 +681,13 @@ if "AnalysisResults" in wb.sheetnames:
             continue
         if str(value[mapRslts["id"]]) != anid:
             results[value[mapRslts["id"]]] = [
-                OperationResult(
-                    operationId=value[mapRslts["operation_id"]],
-                    rawValue=value[mapRslts["rawValue"]],
-                    formattedValue=value[mapRslts["formattedValue"]],
-                    resultGroups=[
-                        ResultGroup(
-                            groupingId=value[x], groupId=value[y], groupValue=value[z]
-                        )
-                        for x, y, z in [
-                            [
-                                mapRslts[rg + "_groupingId"],
-                                mapRslts[rg + "_groupId"],
-                                mapRslts[rg + "_groupValue"],
-                            ]
-                            for rg in set(
-                                k.split("_")[0]
-                                for k in mapRslts.keys()
-                                if k.startswith("resultGroup")
-                            )
-                        ]
-                        if value[x] is not None
-                    ],
-                )
+                read_operation_result(value, mapRslts)
             ]
             anid = str(value[mapRslts["id"]])
         else:
             results[value[mapRslts["id"]]].append(
-                OperationResult(
-                    operationId=value[mapRslts["operation_id"]],
-                    rawValue=value[mapRslts["rawValue"]],
-                    formattedValue=value[mapRslts["formattedValue"]],
-                    resultGroups=[
-                        ResultGroup(
-                            groupingId=value[x], groupId=value[y], groupValue=value[z]
-                        )
-                        for x, y, z in [
-                            [
-                                mapRslts[rg + "_groupingId"],
-                                mapRslts[rg + "_groupId"],
-                                mapRslts[rg + "_groupValue"],
-                            ]
-                            for rg in set(
-                                k.split("_")[0]
-                                for k in mapRslts.keys()
-                                if k.startswith("resultGroup")
-                            )
-                        ]
-                        if value[x] is not None
-                    ],
-                )
+                read_operation_result(value, mapRslts)
             )
-
 
 def get_docrefs(sheetname: str) -> dict:
 
@@ -782,7 +762,7 @@ def get_docrefs(sheetname: str) -> dict:
 
         if value[mapDocRef[idtype]] in docrefs[value[mapDocRef["referenceType"]]]:
             if (
-                value[mapDocRef["referenceDocumentId"]]
+                value[mapDocRef["refDocumentId"]]
                 not in docidx[value[mapDocRef["referenceType"]]][
                     value[mapDocRef[idtype]]
                 ]
@@ -791,36 +771,36 @@ def get_docrefs(sheetname: str) -> dict:
                     value[mapDocRef[idtype]]
                 ].append(
                     DocumentReference(
-                        referenceDocumentId=value[mapDocRef["referenceDocumentId"]]
+                        referenceDocumentId=value[mapDocRef["refDocumentId"]]
                     )
                 )
                 docidx[value[mapDocRef["referenceType"]]][value[mapDocRef[idtype]]][
-                    value[mapDocRef["referenceDocumentId"]]
+                    value[mapDocRef["refDocumentId"]]
                 ] = docrefs[value[mapDocRef["referenceType"]]][
                     value[mapDocRef[idtype]]
                 ][
                     -1
                 ]
                 docidx[value[mapDocRef["referenceType"]]][value[mapDocRef[idtype]]][
-                    value[mapDocRef["referenceDocumentId"]]
+                    value[mapDocRef["refDocumentId"]]
                 ].pageRefs = ([pageref] if pageref else None)
             elif pageref:
                 docidx[value[mapDocRef["referenceType"]]][value[mapDocRef[idtype]]][
-                    value[mapDocRef["referenceDocumentId"]]
+                    value[mapDocRef["refDocumentId"]]
                 ].pageRefs.append(pageref)
         else:
             docrefs[value[mapDocRef["referenceType"]]][value[mapDocRef[idtype]]] = [
                 DocumentReference(
-                    referenceDocumentId=value[mapDocRef["referenceDocumentId"]]
+                    referenceDocumentId=value[mapDocRef["refDocumentId"]]
                 )
             ]
             docidx[value[mapDocRef["referenceType"]]][value[mapDocRef[idtype]]] = {
-                value[mapDocRef["referenceDocumentId"]]: docrefs[
+                value[mapDocRef["refDocumentId"]]: docrefs[
                     value[mapDocRef["referenceType"]]
                 ][value[mapDocRef[idtype]]][-1]
             }
             docidx[value[mapDocRef["referenceType"]]][value[mapDocRef[idtype]]][
-                value[mapDocRef["referenceDocumentId"]]
+                value[mapDocRef["refDocumentId"]]
             ].pageRefs = ([pageref] if pageref else None)
 
     return docrefs
